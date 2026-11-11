@@ -1,0 +1,48 @@
+RIVALS ASSIST
+
+Arquivo: RivalsAssist.client.lua
+
+Inclui:
+- Aimbot de camera na cabeca, com alvo dentro de um circulo central.
+- Ajuste do raio do FOV e da suavidade.
+- ESP com contorno, nome e distancia em studs, inclusive atraves de paredes.
+- Filtro de equipe e verificacao de paredes para a mira.
+- Painel arrastavel com abertura, fechamento e botoes animados.
+- Botao de mira por toque e ajuste do painel ao tamanho da tela.
+- Limpeza dos efeitos e das conexoes ao encerrar ou executar novamente.
+
+CONTROLES
+1. Ative Aimbot e/ou ESP pelos botoes do painel.
+2. No computador, segure o botao direito para acompanhar o alvo.
+3. Em telas de toque, mantenha o botao SEGURAR MIRA pressionado.
+4. Shift direito ou o botao R mostram e ocultam o painel.
+5. Arraste o titulo para mover o painel.
+6. Clique no X do painel para encerrar o script por completo.
+7. Suavidade menor = resposta mais rapida; maior = movimento mais suave.
+
+AMBIENTE E COMPATIBILIDADE
+Este e um script de cliente em Luau, baseado nas APIs padrao do Roblox.
+Para testar no Roblox Studio, crie um LocalScript dentro de
+StarterPlayer > StarterPlayerScripts e cole o conteudo do arquivo.
+Use um teste com pelo menos dois jogadores para verificar mira e ESP.
+Ative os recursos manualmente: ambos iniciam desligados.
+
+O cliente normal do Roblox nao oferece um campo para colar e executar
+scripts em jogos de terceiros. Este arquivo nao inclui ferramenta de
+injecao, integracao com armas ou mecanismo para executar codigo no RIVALS.
+
+Nao foi testado no RIVALS. A compatibilidade depende do ambiente de
+execucao e da estrutura dos personagens do jogo. O script procura
+Players.Character, Humanoid, Head e HumanoidRootPart padrao. Personagens
+nao carregados pelo cliente nao podem ser exibidos pelo ESP.
+
+O filtro de equipe depende das propriedades Team e Neutral do Roblox.
+Se o jogo implementar equipes por outro sistema, esse filtro precisa
+de adaptacao. A mira altera apenas a camera; disparo e registro de
+acertos continuam dependendo do jogo.
+
+REFERENCIAS OFICIAIS
+https://create.roblox.com/docs/reference/engine/classes/Camera
+https://create.roblox.com/docs/reference/engine/classes/Highlight
+https://create.roblox.com/docs/reference/engine/classes/CanvasGroup
+https://create.roblox.com/docs/reference/engine/classes/PlayerGui
