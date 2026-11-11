@@ -3,7 +3,8 @@
 -- Usa Players.Character, Humanoid, Head e HumanoidRootPart padrao.
 -- Nao foi testado no RIVALS e nao inclui integracao especifica com o jogo.
 -- No Roblox Studio: LocalScript em StarterPlayer > StarterPlayerScripts.
--- Controles: botao direito = mirar; Shift direito = painel; X = encerrar.
+-- Controles: ative Aimbot para mirar automaticamente; Shift direito = painel.
+-- Desative Mira automatica para usar o botao direito; X do painel = encerrar.
 
 if not game:IsLoaded() then game.Loaded:Wait() end
 
@@ -19,6 +20,7 @@ local playerGui = player:WaitForChild("PlayerGui")
 
 local config = {
     aim = false,
+    autoAim = true, -- Acompanha alvos sem segurar um botao quando Aimbot esta ligado.
     esp = false,
     teams = true,
     visibility = true,
@@ -44,8 +46,10 @@ local colors = {
 local connections, entries = {}, {}
 local animations = setmetatable({}, { __mode = "k" })
 local stopped, holdingMouse, holdingTouch = false, false, false
+local windowFocused = true
 local touchAimInput, drag, activeSlider
 local renderName = "RivalsAssist_" .. HttpService:GenerateGUID(false)
+local PANEL_WIDTH, PANEL_HEIGHT = 352, 486
 
 local function create(class, properties, parent)
     local object = Instance.new(class)
@@ -119,7 +123,7 @@ local ringStroke = create("UIStroke", {
 
 local panel = create("CanvasGroup", {
     Name = "Panel", BackgroundColor3 = colors.panel, BorderSizePixel = 0,
-    Position = UDim2.fromOffset(24, 100), Size = UDim2.fromOffset(352, 446),
+    Position = UDim2.fromOffset(24, 100), Size = UDim2.fromOffset(PANEL_WIDTH, PANEL_HEIGHT),
     GroupTransparency = 1, Active = true,
 }, gui)
 corner(panel, 14)
@@ -142,7 +146,7 @@ connect(close.Activated, function() cleanup(false) end)
 
 local body = create("Frame", {
     BackgroundTransparency = 1, Position = UDim2.fromOffset(18, 70),
-    Size = UDim2.new(1, -36, 0, 308),
+    Size = UDim2.new(1, -36, 0, 348),
 }, panel)
 create("UIListLayout", {
     Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder,
@@ -184,10 +188,11 @@ local function toggle(label, key, order)
 end
 
 toggle("Aimbot", "aim", 1)
-toggle("ESP: contorno e nome", "esp", 2)
-toggle("Ignorar mesma equipe", "teams", 3)
-toggle("Mira: verificar paredes", "visibility", 4)
-toggle("Mostrar circulo de FOV", "circle", 5)
+toggle("Mira automatica (sem segurar)", "autoAim", 2)
+toggle("ESP: contorno e nome", "esp", 3)
+toggle("Ignorar mesma equipe", "teams", 4)
+toggle("Mira: verificar paredes", "visibility", 5)
+toggle("Mostrar circulo de FOV", "circle", 6)
 
 local function slider(label, key, minimum, maximum, order, suffix)
     local row = create("Frame", {
@@ -234,11 +239,11 @@ local function slider(label, key, minimum, maximum, order, suffix)
     end)
 end
 
-slider("Campo de visao", "fov", 40, 400, 6, " px")
-slider("Suavidade", "smoothing", 1, 20, 7)
+slider("Campo de visao", "fov", 40, 400, 7, " px")
+slider("Suavidade", "smoothing", 1, 20, 8)
 
-local status = text(panel, "Aimbot desligado", UDim2.fromOffset(18, 394), UDim2.new(1, -36, 0, 18), 12, colors.accent)
-text(panel, "Botao direito: mirar  /  Shift direito: painel", UDim2.fromOffset(18, 417), UDim2.new(1, -36, 0, 14), 10, colors.muted)
+local status = text(panel, "Aimbot desligado", UDim2.fromOffset(18, 434), UDim2.new(1, -36, 0, 18), 12, colors.accent)
+text(panel, "Mira automatica: sem segurar  /  Shift direito: painel", UDim2.fromOffset(18, 457), UDim2.new(1, -36, 0, 14), 10, colors.muted)
 
 local opener = create("TextButton", {
     Text = "R", Font = Enum.Font.GothamBold, TextSize = 17, TextColor3 = colors.panel,
@@ -266,12 +271,12 @@ local function fitPanel()
     local camera = Workspace.CurrentCamera
     if not camera then return end
     local view = camera.ViewportSize
-    uiScale = math.min(1, (view.X - 24) / 352, (view.Y - 100) / 446)
+    uiScale = math.min(1, (view.X - 24) / PANEL_WIDTH, (view.Y - 100) / PANEL_HEIGHT)
     uiScale = math.max(uiScale, 0.1)
     if animations[scale] then animations[scale]:Cancel() end
     scale.Scale = uiScale
-    local x = math.clamp(panel.Position.X.Offset, 12, math.max(12, view.X - 352 * uiScale - 12))
-    local y = math.clamp(panel.Position.Y.Offset, 54, math.max(54, view.Y - 446 * uiScale - 12))
+    local x = math.clamp(panel.Position.X.Offset, 12, math.max(12, view.X - PANEL_WIDTH * uiScale - 12))
+    local y = math.clamp(panel.Position.Y.Offset, 54, math.max(54, view.Y - PANEL_HEIGHT * uiScale - 12))
     panel.Position = UDim2.fromOffset(x, y)
 end
 
@@ -311,8 +316,8 @@ connect(Input.InputChanged, function(input)
         if camera then
             local view = camera.ViewportSize
             panel.Position = UDim2.fromOffset(
-                math.clamp(drag.position.X.Offset + delta.X, 12, math.max(12, view.X - 352 * uiScale - 12)),
-                math.clamp(drag.position.Y.Offset + delta.Y, 54, math.max(54, view.Y - 446 * uiScale - 12)))
+                math.clamp(drag.position.X.Offset + delta.X, 12, math.max(12, view.X - PANEL_WIDTH * uiScale - 12)),
+                math.clamp(drag.position.Y.Offset + delta.Y, 54, math.max(54, view.Y - PANEL_HEIGHT * uiScale - 12)))
         end
     end
 end)
@@ -323,9 +328,11 @@ connect(Input.InputEnded, function(input)
     if drag and input == drag.input then drag = nil end
 end)
 connect(Input.WindowFocusReleased, function()
+    windowFocused = false
     holdingMouse, holdingTouch = false, false
     touchAimInput, activeSlider, drag = nil, nil, nil
 end)
+connect(Input.WindowFocused, function() windowFocused = true end)
 connect(player.CharacterRemoving, function()
     holdingMouse, holdingTouch = false, false
     touchAimInput = nil
@@ -400,11 +407,11 @@ RunService:BindToRenderStep(renderName, Enum.RenderPriority.Camera.Value + 1, fu
     end
     ring.Visible = config.aim and config.circle
     ring.Size = UDim2.fromOffset(config.fov * 2, config.fov * 2)
-    touchAim.Visible = Input.TouchEnabled and config.aim
+    touchAim.Visible = Input.TouchEnabled and config.aim and not config.autoAim
 
     local localCharacter, localRoot = characterParts(player)
-    local aiming = config.aim and localCharacter ~= nil and not Input:GetFocusedTextBox()
-        and (holdingMouse or holdingTouch)
+    local aiming = config.aim and windowFocused and localCharacter ~= nil and not Input:GetFocusedTextBox()
+        and (config.autoAim or holdingMouse or holdingTouch)
     local center = camera.ViewportSize * 0.5
     local nearestDistance, targetPart, targetPlayer = config.fov, nil, nil
 
@@ -454,10 +461,16 @@ RunService:BindToRenderStep(renderName, Enum.RenderPriority.Camera.Value + 1, fu
     ringStroke.Color = targetPart and colors.enemy or colors.accent
     if not config.aim then
         status.Text = "Aimbot desligado"
+    elseif not windowFocused then
+        status.Text = "Pausado: janela sem foco"
+    elseif not localCharacter then
+        status.Text = "Aguardando personagem"
+    elseif Input:GetFocusedTextBox() then
+        status.Text = "Pausado: digitando"
     elseif targetPlayer then
-        status.Text = "Alvo: " .. targetPlayer.DisplayName
+        status.Text = (config.autoAim and "Auto: " or "Alvo: ") .. targetPlayer.DisplayName
     elseif aiming then
-        status.Text = "Nenhum alvo no FOV"
+        status.Text = config.autoAim and "Automatico: nenhum alvo no FOV" or "Nenhum alvo no FOV"
     else
         status.Text = Input.TouchEnabled and "Segure MIRA para acompanhar" or "Segure o botao direito para mirar"
     end

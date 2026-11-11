@@ -4,6 +4,7 @@ Arquivo: RivalsAssist.client.lua
 
 Inclui:
 - Aimbot de camera na cabeca, com alvo dentro de um circulo central.
+- Mira automatica sem precisar segurar o botao direito.
 - Ajuste do raio do FOV e da suavidade.
 - ESP com contorno, nome e distancia em studs, inclusive atraves de paredes.
 - Filtro de equipe e verificacao de paredes para a mira.
@@ -13,12 +14,15 @@ Inclui:
 
 CONTROLES
 1. Ative Aimbot e/ou ESP pelos botoes do painel.
-2. No computador, segure o botao direito para acompanhar o alvo.
-3. Em telas de toque, mantenha o botao SEGURAR MIRA pressionado.
+2. Mira automatica (sem segurar) vem selecionada: basta ligar Aimbot.
+   Desligue Aimbot para parar. O alvo precisa estar dentro do FOV.
+3. Se desativar Mira automatica, segure o botao direito no computador
+   ou SEGURAR MIRA nas telas de toque para acompanhar o alvo.
 4. Shift direito ou o botao R mostram e ocultam o painel.
 5. Arraste o titulo para mover o painel.
 6. Clique no X do painel para encerrar o script por completo.
 7. Suavidade menor = resposta mais rapida; maior = movimento mais suave.
+8. A mira pausa ao digitar, perder o foco da janela ou morrer.
 
 AMBIENTE E COMPATIBILIDADE
 Este e um script de cliente em Luau, baseado nas APIs padrao do Roblox.

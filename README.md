@@ -3,6 +3,7 @@
 Script de cliente em Luau com painel simples, arrastável e animado.
 
 - Aimbot de câmera com ajuste de FOV e suavidade.
+- Mira automática para acompanhar alvos sem segurar um botão.
 - ESP com contorno, nome e distância em studs.
 - Filtros de equipe e de visibilidade para a mira.
 - Controles por mouse e toque.
@@ -20,13 +21,16 @@ Esse carregador exige um ambiente que disponibilize `loadstring` e `game:HttpGet
 
 Ative Aimbot e ESP no painel; ambos iniciam desligados.
 
-- **Botão direito:** mantenha pressionado para mirar.
-- **SEGURAR MIRA:** controle equivalente para telas de toque.
+- **Mira automática (sem segurar):** vem selecionada; basta ligar **Aimbot** para acompanhar alvos dentro do FOV sem pressionar outro botão. Desligue **Aimbot** para parar.
+- **Botão direito:** com Mira automática desativada, mantenha pressionado para mirar.
+- **SEGURAR MIRA:** controle equivalente para telas de toque no modo manual.
 - **Shift direito** ou **R:** mostrar e ocultar o painel.
 - **Título do painel:** arraste para mover.
 - **X do painel:** encerrar e remover os efeitos.
 
 O FOV é o raio em pixels a partir do centro da tela. Uma suavidade menor deixa a mira mais rápida; uma maior deixa o movimento mais suave.
+
+A mira pausa enquanto você digita, quando a janela perde o foco ou enquanto seu personagem está morto.
 
 ## Compatibilidade e validação
 
