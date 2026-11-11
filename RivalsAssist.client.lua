@@ -95,6 +95,10 @@ local visuals = create("Folder", { Name = renderName }, Workspace)
 local function removeEntry(other)
     local entry = entries[other]
     if not entry then return end
+    if animations[entry.healthFill] then
+        animations[entry.healthFill]:Cancel()
+        animations[entry.healthFill] = nil
+    end
     entry.highlight:Destroy()
     entry.billboard:Destroy()
     entries[other] = nil
@@ -189,7 +193,7 @@ end
 
 toggle("Aimbot", "aim", 1)
 toggle("Mira automatica (sem segurar)", "autoAim", 2)
-toggle("ESP: contorno e nome", "esp", 3)
+toggle("ESP: contorno, nome e vida", "esp", 3)
 toggle("Ignorar mesma equipe", "teams", 4)
 toggle("Mira: verificar paredes", "visibility", 5)
 toggle("Mostrar circulo de FOV", "circle", 6)
@@ -353,7 +357,7 @@ local function characterParts(other)
     local aimPart = head or root
     if not humanoid or humanoid.Health <= 0 or not root or not aimPart then return nil end
     if not root:IsA("BasePart") or not aimPart:IsA("BasePart") then return nil end
-    return character, root, aimPart
+    return character, root, aimPart, humanoid
 end
 
 local function entryFor(other, character, aimPart)
@@ -370,16 +374,50 @@ local function entryFor(other, character, aimPart)
     }, visuals)
     local billboard = create("BillboardGui", {
         Adornee = aimPart, Enabled = false, AlwaysOnTop = true,
-        Size = UDim2.fromOffset(180, 38), StudsOffsetWorldSpace = Vector3.new(0, 2, 0),
+        Size = UDim2.fromOffset(180, 64), StudsOffsetWorldSpace = Vector3.new(0, 2.3, 0),
         MaxDistance = config.maxDistance,
     }, gui)
-    local label = text(billboard, "", UDim2.fromScale(0, 0), UDim2.fromScale(1, 1), 12)
+    local label = text(billboard, "", UDim2.fromOffset(0, 0), UDim2.new(1, 0, 0, 30), 12)
     label.TextXAlignment = Enum.TextXAlignment.Center
     label.TextStrokeTransparency = 0.25
     label.Font = Enum.Font.GothamBold
-    entry = { character = character, highlight = highlight, billboard = billboard, label = label }
+    local healthTrack = create("Frame", {
+        Name = "HealthBar", BackgroundColor3 = Color3.fromRGB(23, 27, 35),
+        BackgroundTransparency = 0.15, BorderSizePixel = 0,
+        AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 34),
+        Size = UDim2.fromOffset(140, 8), ClipsDescendants = true,
+    }, billboard)
+    corner(healthTrack, 4)
+    create("UIStroke", { Color = Color3.fromRGB(0, 0, 0), Thickness = 1, Transparency = 0.2 }, healthTrack)
+    local healthFill = create("Frame", {
+        Name = "Fill", BackgroundColor3 = colors.accent, BorderSizePixel = 0,
+        Size = UDim2.fromScale(0, 1),
+    }, healthTrack)
+    corner(healthFill, 4)
+    local healthText = text(billboard, "", UDim2.fromOffset(0, 46), UDim2.new(1, 0, 0, 16), 10)
+    healthText.TextXAlignment = Enum.TextXAlignment.Center
+    healthText.TextStrokeTransparency = 0.25
+    healthText.Font = Enum.Font.GothamBold
+    entry = {
+        character = character, highlight = highlight, billboard = billboard, label = label,
+        healthFill = healthFill, healthText = healthText,
+    }
     entries[other] = entry
     return entry
+end
+
+local function updateHealth(entry, humanoid)
+    local health = math.max(0, humanoid.Health)
+    local maximum = math.max(0, humanoid.MaxHealth)
+    if entry.health == health and entry.maxHealth == maximum then return end
+    entry.health, entry.maxHealth = health, maximum
+    -- Evita divisao por zero e suporta vida infinita sem produzir NaN.
+    local ratio = maximum > 0 and (health == maximum and 1 or math.clamp(health / maximum, 0, 1)) or 0
+    animate(entry.healthFill, {
+        Size = UDim2.fromScale(ratio, 1),
+        BackgroundColor3 = Color3.fromHSV(ratio / 3, 0.8, 1),
+    }, 0.12)
+    entry.healthText.Text = tostring(math.floor(health)) .. " / " .. tostring(math.floor(maximum)) .. " HP"
 end
 
 local rayParams = RaycastParams.new()
@@ -425,7 +463,7 @@ RunService:BindToRenderStep(renderName, Enum.RenderPriority.Camera.Value + 1, fu
     if aiming or (config.esp and updateESP) then
         for _, other in ipairs(Players:GetPlayers()) do
             if other == player then continue end
-            local character, root, aimPart = characterParts(other)
+            local character, root, aimPart, humanoid = characterParts(other)
             local origin = localRoot and localRoot.Position or camera.CFrame.Position
             local distance = root and (root.Position - origin).Magnitude or math.huge
             local eligible = character ~= nil and not sameTeam(other) and distance <= config.maxDistance
@@ -435,6 +473,7 @@ RunService:BindToRenderStep(renderName, Enum.RenderPriority.Camera.Value + 1, fu
                     entry.highlight.Enabled = true
                     entry.billboard.Enabled = true
                     entry.label.Text = other.DisplayName .. "\n" .. tostring(math.floor(distance)) .. " studs"
+                    updateHealth(entry, humanoid)
                 else
                     removeEntry(other)
                 end

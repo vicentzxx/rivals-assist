@@ -4,7 +4,8 @@ Script de cliente em Luau com painel simples, arrastável e animado.
 
 - Aimbot de câmera com ajuste de FOV e suavidade.
 - Mira automática para acompanhar alvos sem segurar um botão.
-- ESP com contorno, nome e distância em studs.
+- ESP com contorno, nome, distância em studs e barra de vida.
+- Barra de vida animada, com cores de verde a vermelho e vida atual/máxima em HP.
 - Filtros de equipe e de visibilidade para a mira.
 - Controles por mouse e toque.
 - Encerramento com limpeza de efeitos e conexões.
@@ -20,6 +21,8 @@ Esse carregador exige um ambiente que disponibilize `loadstring` e `game:HttpGet
 ## Controles
 
 Ative Aimbot e ESP no painel; ambos iniciam desligados.
+
+A barra de vida aparece automaticamente junto ao ESP, abaixo do nome e da distância. O preenchimento acompanha a proporção entre a vida atual e a máxima, e os valores em HP aparecem logo abaixo. A atualização ocorre até dez vezes por segundo.
 
 - **Mira automática (sem segurar):** vem selecionada; basta ligar **Aimbot** para acompanhar alvos dentro do FOV sem pressionar outro botão. Desligue **Aimbot** para parar.
 - **Botão direito:** com Mira automática desativada, mantenha pressionado para mirar.
